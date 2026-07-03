@@ -65,7 +65,7 @@ import {
   arrayMove,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -144,8 +144,8 @@ const defaultTheme: ThemeSettingsType = {
   id: 'main',
   heroTitle: 'کافه دوپامین',
   heroSubtitle: 'بهترین قهوه و نوشیدنی‌ها در فضایی دلنشین',
-  heroImage: '/uploads/hero/hero-default.png',
-  aboutImage: '/uploads/about/about-default.png',
+  heroImage: '/hero-default.jpg',
+  aboutImage: '/about-default.jpg',
   primaryColor: '#8B5E3C',
   accentColor: '#D4A574',
   bgColor: '#FDF8F3',
@@ -760,54 +760,106 @@ export default function CafeApp({ categories: initialCategories, settings: initi
 
       <main className="flex-1">
         {/* ─── HERO ──────────────────────────────────────────────────────── */}
-        <section className="relative w-full h-[70vh] min-h-[500px] flex items-center justify-center overflow-hidden">
+        <section className="relative w-full h-[85vh] min-h-[600px] flex items-center justify-center overflow-hidden">
           <div
-            className="absolute inset-0 bg-cover bg-center"
+            className="absolute inset-0 bg-cover bg-center scale-105"
             style={{ backgroundImage: `url(${tc.heroImage})` }}
           />
-          <div className="absolute inset-0" style={{ backgroundColor: `${tc.textColor}88` }} />
+          <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/25 to-black/65" />
+          <div
+            className="absolute inset-0 opacity-25 animate-gradient-x"
+            style={{
+              background: `linear-gradient(135deg, ${tc.accentColor}55, transparent 40%, ${tc.primaryColor}33 60%, transparent)`,
+              backgroundSize: '300% 300%',
+            }}
+          />
+          {/* Floating orbs */}
+          <div className="absolute top-[12%] left-[8%] w-24 h-24 rounded-full animate-float" style={{ backgroundColor: `${tc.accentColor}33`, filter: 'blur(40px)' }} />
+          <div className="absolute bottom-[18%] right-[10%] w-36 h-36 rounded-full animate-float-delayed" style={{ backgroundColor: `${tc.primaryColor}22`, filter: 'blur(50px)' }} />
+          <div className="absolute top-[50%] left-[55%] w-16 h-16 rounded-full animate-pulse-soft" style={{ backgroundColor: `${tc.accentColor}44` }} />
           <motion.div
-            className="relative z-10 text-center px-4 max-w-2xl"
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-50px" }}
-            transition={{ duration: 0.7 }}
+            className="relative z-10 text-center px-4 max-w-3xl"
+            initial={{ opacity: 0, y: 40 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }}
           >
+            <motion.div
+              className="inline-flex items-center gap-2 mb-6 px-5 py-2 rounded-full glass-effect text-sm font-medium"
+              style={{ color: tc.accentColor }}
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.6, delay: 0.3 }}
+            >
+              <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
+              باز است
+            </motion.div>
             <motion.h1
-              className="text-4xl sm:text-5xl md:text-6xl font-extrabold mb-4 drop-shadow-lg"
-              style={{ color: '#FFFFFF' }}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-50px" }}
-              transition={{ duration: 0.6, delay: 0.1 }}
+              className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-black mb-6 leading-tight"
+              style={{ color: '#FFFFFF', textShadow: '0 4px 30px rgba(0,0,0,0.3)' }}
+              initial={{ opacity: 0, y: 30, filter: 'blur(10px)' }}
+              animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+              transition={{ duration: 0.8, delay: 0.4 }}
             >
               {tc.heroTitle}
             </motion.h1>
             <motion.p
-              className="text-lg sm:text-xl mb-8 drop-shadow-md"
-              style={{ color: `${tc.accentColor}ee` }}
+              className="text-lg sm:text-xl md:text-2xl mb-10 font-light"
+              style={{ color: `${tc.accentColor}dd` }}
               initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-50px" }}
-              transition={{ duration: 0.6, delay: 0.25 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.6 }}
             >
               {tc.heroSubtitle}
             </motion.p>
-            <Button
-              size="lg"
-              onClick={scrollToMenu}
-              className="text-base px-8 py-6 rounded-xl font-semibold shadow-lg transition-transform hover:scale-105"
-              style={{ backgroundColor: tc.accentColor, color: '#fff' }}
+            <motion.div
+              className="flex flex-col sm:flex-row items-center justify-center gap-4"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.8 }}
             >
-              مشاهده منو
-            </Button>
+              <Button
+                size="lg"
+                onClick={scrollToMenu}
+                className="text-base px-10 py-6 rounded-2xl font-bold shadow-2xl transition-all duration-300 hover:shadow-[0_25px_50px_-12px_rgba(0,0,0,0.4)] hover:scale-105 active:scale-95"
+                style={{ backgroundColor: tc.accentColor, color: '#fff' }}
+              >
+                مشاهده منو
+              </Button>
+              <Button
+                size="lg"
+                variant="outline"
+                onClick={() => scrollTo('location')}
+                className="text-base px-10 py-6 rounded-2xl font-semibold border-white/30 text-white hover:bg-white/10 transition-all duration-300 backdrop-blur-sm"
+              >
+                موقعیت ما روی نقشه
+              </Button>
+            </motion.div>
+          </motion.div>
+          {/* Scroll indicator */}
+          <motion.div
+            className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 1.5, duration: 1 }}
+          >
+            <motion.div
+              className="w-7 h-11 rounded-full border-2 border-white/30 flex items-start justify-center pt-2"
+              animate={{ y: [0, 6, 0] }}
+              transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+            >
+              <motion.div
+                className="w-1.5 h-1.5 rounded-full bg-white/70"
+                animate={{ y: [0, 12, 0], opacity: [1, 0.3, 1] }}
+                transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+              />
+            </motion.div>
           </motion.div>
         </section>
 
         {/* ─── ABOUT ─────────────────────────────────────────────────────── */}
-        <section id="about" className="py-16 sm:py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+        <section id="about" className="py-16 sm:py-24 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
           <motion.h2
-            className="text-3xl sm:text-4xl font-bold text-center mb-12"
+            className="text-3xl sm:text-4xl font-bold text-center mb-4"
             style={{ color: tc.primaryColor }}
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -817,32 +869,97 @@ export default function CafeApp({ categories: initialCategories, settings: initi
             {tc.sectionTitle1}
           </motion.h2>
           <motion.div
+            className="w-16 h-1 rounded-full mx-auto mb-12"
+            style={{ backgroundColor: tc.accentColor }}
+            initial={{ width: 0, opacity: 0 }}
+            whileInView={{ width: 64, opacity: 1 }}
+            viewport={{ once: true, margin: "-50px" }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+          />
+          <motion.div
             className="grid md:grid-cols-2 gap-8 sm:gap-12 items-center"
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-50px" }}
             transition={{ duration: 0.7, delay: 0.15 }}
           >
-            <div className="rounded-2xl overflow-hidden shadow-lg">
-              <img
-                src={tc.aboutImage}
-                alt="درباره کافه دوپامین"
-                className="w-full h-64 sm:h-80 object-cover"
-              />
+            <div className="relative group">
+              <div className="absolute -inset-3 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-xl" style={{ backgroundColor: `${tc.accentColor}33` }} />
+              <div className="relative rounded-2xl overflow-hidden shadow-xl">
+                <img
+                  src={tc.aboutImage}
+                  alt="درباره کافه دوپامین"
+                  className="w-full h-64 sm:h-80 object-cover transition-transform duration-700 group-hover:scale-105"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
+              </div>
             </div>
-            <div>
+            <div className="space-y-4">
               <p className="text-base sm:text-lg leading-8" style={{ color: `${tc.textColor}dd` }}>
                 {siteSettings.aboutText}
               </p>
+              {siteSettings.workHours && (
+                <div className="flex items-center gap-3 p-4 rounded-xl" style={{ backgroundColor: `${tc.accentColor}0d` }}>
+                  <Clock className="h-5 w-5 shrink-0" style={{ color: tc.accentColor }} />
+                  <span className="text-sm font-medium" style={{ color: tc.primaryColor }}>{siteSettings.workHours}</span>
+                </div>
+              )}
             </div>
           </motion.div>
         </section>
+
+        {/* ─── WAVE DIVIDER ─────────────────────────────────────────────── */}
+        <div className="w-full overflow-hidden leading-[0]">
+          <svg viewBox="0 0 1200 60" preserveAspectRatio="none" className="w-full h-10 sm:h-16">
+            <path d="M0,30 C200,55 400,5 600,30 C800,55 1000,5 1200,30 L1200,60 L0,60 Z" fill={tc.accentColor} fillOpacity="0.08" />
+            <path d="M0,40 C150,55 350,15 600,40 C850,55 1050,15 1200,40 L1200,60 L0,60 Z" fill={tc.accentColor} fillOpacity="0.04" />
+          </svg>
+        </div>
+
+        {/* ─── FEATURES ──────────────────────────────────────────────────── */}
+        <section className="py-16 sm:py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
+            {[
+              { icon: '☕', title: 'قهوه تازه', desc: 'دانه‌های مرغوب از بهترین مزارع' },
+              { icon: '🎵', title: 'فضای دلنشین', desc: 'محیطی آرام و دنج برای استراحت' },
+              { icon: '👨\u200D🍳', title: 'باریستای حرفه‌ای', desc: 'تهیه نوشیدنی توسط متخصصان' },
+              { icon: '⭐', title: 'کیفیت برتر', desc: 'تعهد به بالاترین استانداردها' },
+            ].map((f, i) => (
+              <motion.div
+                key={f.title}
+                className="text-center p-5 sm:p-6 rounded-2xl transition-all duration-300 hover:shadow-lg hover:-translate-y-2 cursor-default"
+                style={{ backgroundColor: `${tc.accentColor}0d` }}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-50px" }}
+                transition={{ duration: 0.5, delay: i * 0.12 }}
+              >
+                <motion.div
+                  className="text-3xl sm:text-5xl mb-3 sm:mb-4 inline-block"
+                  whileHover={{ scale: 1.3, rotate: [0, -10, 10, 0] }}
+                  transition={{ duration: 0.5 }}
+                >
+                  {f.icon}
+                </motion.div>
+                <h3 className="font-bold text-sm sm:text-lg mb-1 sm:mb-2" style={{ color: tc.primaryColor }}>{f.title}</h3>
+                <p className="text-xs sm:text-sm leading-relaxed" style={{ color: `${tc.textColor}77` }}>{f.desc}</p>
+              </motion.div>
+            ))}
+          </div>
+        </section>
+
+        {/* ─── WAVE DIVIDER 2 ───────────────────────────────────────────── */}
+        <div className="w-full overflow-hidden leading-[0] rotate-180">
+          <svg viewBox="0 0 1200 60" preserveAspectRatio="none" className="w-full h-10 sm:h-16">
+            <path d="M0,30 C200,55 400,5 600,30 C800,55 1000,5 1200,30 L1200,60 L0,60 Z" fill={tc.accentColor} fillOpacity="0.08" />
+          </svg>
+        </div>
 
         {/* ─── FEATURED ──────────────────────────────────────────────────── */}
         {featuredItems.length > 0 && (
           <section id="featured" className="py-16 sm:py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
             <motion.h2
-              className="text-3xl sm:text-4xl font-bold text-center mb-12"
+              className="text-3xl sm:text-4xl font-bold text-center mb-4"
               style={{ color: tc.primaryColor }}
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -851,6 +968,14 @@ export default function CafeApp({ categories: initialCategories, settings: initi
             >
               {tc.sectionTitle3}
             </motion.h2>
+            <motion.div
+              className="w-16 h-1 rounded-full mx-auto mb-12"
+              style={{ backgroundColor: tc.accentColor }}
+              initial={{ width: 0, opacity: 0 }}
+              whileInView={{ width: 64, opacity: 1 }}
+              viewport={{ once: true, margin: "-50px" }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+            />
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {featuredItems.map((item, index) => (
                 <motion.div
@@ -861,12 +986,12 @@ export default function CafeApp({ categories: initialCategories, settings: initi
                   transition={{ duration: 0.5, delay: index * 0.1 }}
                 >
                   <Card
-                    className="rounded-xl overflow-hidden shadow-md transition-transform hover:scale-[1.02] hover:shadow-lg"
+                    className="rounded-xl overflow-hidden card-hover-lift"
                     style={{ backgroundColor: tc.cardBgColor }}
                   >
                   {item.image && (
                     <div className="w-full h-48 overflow-hidden">
-                      <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
+                      <img src={item.image} alt={item.name} className="w-full h-full object-cover image-zoom" />
                     </div>
                   )}
                   <div className="p-5">
@@ -900,7 +1025,7 @@ export default function CafeApp({ categories: initialCategories, settings: initi
           className="py-16 sm:py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto"
         >
           <motion.h2
-            className="text-3xl sm:text-4xl font-bold text-center mb-12"
+            className="text-3xl sm:text-4xl font-bold text-center mb-4"
             style={{ color: tc.primaryColor }}
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -909,6 +1034,14 @@ export default function CafeApp({ categories: initialCategories, settings: initi
           >
             {tc.sectionTitle2}
           </motion.h2>
+          <motion.div
+            className="w-16 h-1 rounded-full mx-auto mb-12"
+            style={{ backgroundColor: tc.accentColor }}
+            initial={{ width: 0, opacity: 0 }}
+            whileInView={{ width: 64, opacity: 1 }}
+            viewport={{ once: true, margin: "-50px" }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+          />
 
           {/* Category Pills */}
           <motion.div
@@ -944,22 +1077,29 @@ export default function CafeApp({ categories: initialCategories, settings: initi
           </motion.div>
 
           {/* Items Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={activeMenuCategory}
+              className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.3 }}
+            >
             {allMenuItems.filter((i) => i.available).map((item, index) => (
               <motion.div
                 key={item.id}
                 initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: "-50px" }}
-                transition={{ duration: 0.5, delay: index * 0.08 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4, delay: index * 0.06 }}
               >
               <Card
-                className="rounded-xl overflow-hidden shadow-md transition-transform hover:scale-[1.02] hover:shadow-lg"
+                className="rounded-xl overflow-hidden card-hover-lift"
                 style={{ backgroundColor: tc.cardBgColor }}
               >
                 {item.image ? (
                   <div className="w-full h-48 overflow-hidden">
-                    <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
+                    <img src={item.image} alt={item.name} className="w-full h-full object-cover image-zoom" />
                   </div>
                 ) : (
                   <div
@@ -981,7 +1121,8 @@ export default function CafeApp({ categories: initialCategories, settings: initi
               </Card>
               </motion.div>
             ))}
-          </div>
+            </motion.div>
+          </AnimatePresence>
 
           {/* Show unavailable items count */}
           {allMenuItems.filter((i) => !i.available).length > 0 && (
@@ -994,7 +1135,7 @@ export default function CafeApp({ categories: initialCategories, settings: initi
         {/* ─── LOCATION ──────────────────────────────────────────────────── */}
         <section id="location" className="py-16 sm:py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
           <motion.h2
-            className="text-3xl sm:text-4xl font-bold text-center mb-12"
+            className="text-3xl sm:text-4xl font-bold text-center mb-4"
             style={{ color: tc.primaryColor }}
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -1004,43 +1145,66 @@ export default function CafeApp({ categories: initialCategories, settings: initi
             {tc.sectionTitle4}
           </motion.h2>
           <motion.div
+            className="w-16 h-1 rounded-full mx-auto mb-12"
+            style={{ backgroundColor: tc.accentColor }}
+            initial={{ width: 0, opacity: 0 }}
+            whileInView={{ width: 64, opacity: 1 }}
+            viewport={{ once: true, margin: "-50px" }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+          />
+          <motion.div
             className="grid md:grid-cols-2 gap-8 sm:gap-12"
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-50px" }}
             transition={{ duration: 0.7, delay: 0.15 }}
           >
-            <div className="space-y-6">
-              <div className="flex items-start gap-3">
-                <MapPin className="h-5 w-5 mt-1 shrink-0" style={{ color: tc.accentColor }} />
-                <p className="text-base" style={{ color: `${tc.textColor}cc` }}>{siteSettings.address}</p>
+            <div className="space-y-4">
+              <div className="flex items-start gap-4 p-4 rounded-xl transition-all duration-300 hover:shadow-md" style={{ backgroundColor: `${tc.accentColor}0d` }}>
+                <div className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0" style={{ backgroundColor: `${tc.accentColor}22` }}>
+                  <MapPin className="h-5 w-5" style={{ color: tc.accentColor }} />
+                </div>
+                <div>
+                  <p className="text-xs font-semibold mb-1" style={{ color: tc.primaryColor }}>آدرس</p>
+                  <p className="text-sm" style={{ color: `${tc.textColor}cc` }}>{siteSettings.address}</p>
+                </div>
               </div>
               {siteSettings.phone && (
-                <div className="flex items-start gap-3">
-                  <Phone className="h-5 w-5 mt-1 shrink-0" style={{ color: tc.accentColor }} />
-                  <p className="text-base" style={{ color: `${tc.textColor}cc`, direction: 'ltr', textAlign: 'right' }}>
-                    {siteSettings.phone}
-                  </p>
+                <div className="flex items-start gap-4 p-4 rounded-xl transition-all duration-300 hover:shadow-md" style={{ backgroundColor: `${tc.accentColor}0d` }}>
+                  <div className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0" style={{ backgroundColor: `${tc.accentColor}22` }}>
+                    <Phone className="h-5 w-5" style={{ color: tc.accentColor }} />
+                  </div>
+                  <div>
+                    <p className="text-xs font-semibold mb-1" style={{ color: tc.primaryColor }}>تلفن</p>
+                    <p className="text-sm" style={{ color: `${tc.textColor}cc`, direction: 'ltr', textAlign: 'right' }}>
+                      {siteSettings.phone}
+                    </p>
+                  </div>
                 </div>
               )}
-              <div className="flex items-start gap-3">
-                <Clock className="h-5 w-5 mt-1 shrink-0" style={{ color: tc.accentColor }} />
-                <p className="text-base" style={{ color: `${tc.textColor}cc` }}>{siteSettings.workHours}</p>
+              <div className="flex items-start gap-4 p-4 rounded-xl transition-all duration-300 hover:shadow-md" style={{ backgroundColor: `${tc.accentColor}0d` }}>
+                <div className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0" style={{ backgroundColor: `${tc.accentColor}22` }}>
+                  <Clock className="h-5 w-5" style={{ color: tc.accentColor }} />
+                </div>
+                <div>
+                  <p className="text-xs font-semibold mb-1" style={{ color: tc.primaryColor }}>ساعت کاری</p>
+                  <p className="text-sm" style={{ color: `${tc.textColor}cc` }}>{siteSettings.workHours}</p>
+                </div>
               </div>
-              <div className="flex items-center gap-4 mt-6">
+              <div className="flex items-center gap-3 pt-4">
                 {siteSettings.instagram && (
-                  <a href={siteSettings.instagram} target="_blank" rel="noopener noreferrer" className="transition-transform hover:scale-110">
-                    <Instagram className="h-6 w-6" style={{ color: tc.primaryColor }} />
+                  <a href={siteSettings.instagram} target="_blank" rel="noopener noreferrer" className="w-11 h-11 rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110 hover:shadow-lg" style={{ backgroundColor: `${tc.accentColor}15` }}>
+                    <Instagram className="h-5 w-5" style={{ color: tc.primaryColor }} />
                   </a>
                 )}
                 {siteSettings.telegram && (
-                  <a href={siteSettings.telegram} target="_blank" rel="noopener noreferrer" className="transition-transform hover:scale-110">
-                    <Send className="h-6 w-6" style={{ color: tc.primaryColor }} />
+                  <a href={siteSettings.telegram} target="_blank" rel="noopener noreferrer" className="w-11 h-11 rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110 hover:shadow-lg" style={{ backgroundColor: `${tc.accentColor}15` }}>
+                    <Send className="h-5 w-5" style={{ color: tc.primaryColor }} />
                   </a>
                 )}
                 {siteSettings.whatsapp && (
-                  <a href={siteSettings.whatsapp} target="_blank" rel="noopener noreferrer" className="transition-transform hover:scale-110">
-                    <MessageCircle className="h-6 w-6" style={{ color: tc.primaryColor }} />
+                  <a href={siteSettings.whatsapp} target="_blank" rel="noopener noreferrer" className="w-11 h-11 rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110 hover:shadow-lg" style={{ backgroundColor: `${tc.accentColor}15` }}>
+                    <MessageCircle className="h-5 w-5" style={{ color: tc.primaryColor }} />
                   </a>
                 )}
               </div>
@@ -1105,33 +1269,49 @@ export default function CafeApp({ categories: initialCategories, settings: initi
 
       {/* ─── FOOTER ─────────────────────────────────────────────────────── */}
       <footer
-        className="mt-auto border-t py-8 px-4 sm:px-6 lg:px-8"
-        style={{ borderColor: `${tc.accentColor}33`, backgroundColor: `${tc.primaryColor}08` }}
+        className="mt-auto border-t py-12 px-4 sm:px-6 lg:px-8"
+        style={{ borderColor: `${tc.accentColor}33`, backgroundColor: `${tc.primaryColor}0a` }}
       >
-        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
-          <span className="font-bold text-lg" style={{ color: tc.primaryColor }}>
-            {siteSettings.cafeName}
-          </span>
-          <div className="flex items-center gap-4">
-            {siteSettings.instagram && (
-              <a href={siteSettings.instagram} target="_blank" rel="noopener noreferrer" className="transition-transform hover:scale-110">
-                <Instagram className="h-5 w-5" style={{ color: tc.primaryColor }} />
-              </a>
-            )}
-            {siteSettings.telegram && (
-              <a href={siteSettings.telegram} target="_blank" rel="noopener noreferrer" className="transition-transform hover:scale-110">
-                <Send className="h-5 w-5" style={{ color: tc.primaryColor }} />
-              </a>
-            )}
-            {siteSettings.whatsapp && (
-              <a href={siteSettings.whatsapp} target="_blank" rel="noopener noreferrer" className="transition-transform hover:scale-110">
-                <MessageCircle className="h-5 w-5" style={{ color: tc.primaryColor }} />
-              </a>
-            )}
+        <div className="max-w-7xl mx-auto">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-8 items-center">
+            <div className="text-center sm:text-right">
+              <span className="font-bold text-xl" style={{ color: tc.primaryColor }}>
+                {siteSettings.cafeName}
+              </span>
+              <p className="text-sm mt-2" style={{ color: `${tc.textColor}77` }}>
+                {siteSettings.address}
+              </p>
+            </div>
+            <div className="flex items-center justify-center gap-3">
+              {siteSettings.instagram && (
+                <a href={siteSettings.instagram} target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110 hover:shadow-lg" style={{ backgroundColor: `${tc.accentColor}15` }}>
+                  <Instagram className="h-5 w-5" style={{ color: tc.primaryColor }} />
+                </a>
+              )}
+              {siteSettings.telegram && (
+                <a href={siteSettings.telegram} target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110 hover:shadow-lg" style={{ backgroundColor: `${tc.accentColor}15` }}>
+                  <Send className="h-5 w-5" style={{ color: tc.primaryColor }} />
+                </a>
+              )}
+              {siteSettings.whatsapp && (
+                <a href={siteSettings.whatsapp} target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110 hover:shadow-lg" style={{ backgroundColor: `${tc.accentColor}15` }}>
+                  <MessageCircle className="h-5 w-5" style={{ color: tc.primaryColor }} />
+                </a>
+              )}
+            </div>
+            <div className="text-center sm:text-left">
+              <p className="text-sm" style={{ color: `${tc.textColor}88` }}>
+                {tc.footerText} © {new Date().getFullYear()}
+              </p>
+              <button
+                onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+                className="mt-2 text-xs font-medium transition-all duration-300 hover:-translate-y-1"
+                style={{ color: tc.accentColor }}
+              >
+                ↑ بازگشت به بالا
+              </button>
+            </div>
           </div>
-          <p className="text-sm" style={{ color: `${tc.textColor}88` }}>
-            {tc.footerText} © {new Date().getFullYear()}
-          </p>
         </div>
       </footer>
 
