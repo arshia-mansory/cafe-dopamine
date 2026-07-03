@@ -1,42 +1,14 @@
-import { PrismaClient } from '@prisma/client';
-import { PrismaLibSQL } from '@prisma/adapter-libsql';
-import { createClient } from '@libsql/client';
+import { createClient, type Client } from '@libsql/client';
 
-const globalForPrisma = globalThis as unknown as {
-  prisma: PrismaClient | undefined;
-};
+let _client: Client | undefined;
 
-function createPrismaClient(): PrismaClient {
-  const dbUrl = process.env.DATABASE_URL || 'file:db/custom.db';
-  const authToken = process.env.DATABASE_AUTH_TOKEN || undefined;
-
-  const libsql = createClient({
-    url: dbUrl,
-    ...(authToken ? { authToken } : {}),
-  });
-
-  const adapter = new PrismaLibSQL(libsql);
-  return new PrismaClient({ adapter });
-}
-
-// Lazy init - only connect when actually used, not during build
-let _db: PrismaClient | undefined;
-
-function getDb(): PrismaClient {
-  if (!_db) {
-    _db = createPrismaClient();
+export function getDb(): Client {
+  if (!_client) {
+    const url = process.env.DATABASE_URL || 'file:db/custom.db';
+    const authToken = process.env.DATABASE_AUTH_TOKEN || undefined;
+    _client = createClient({ url, ...(authToken ? { authToken } : {}) });
   }
-  return _db;
+  return _client;
 }
 
-export const db = new Proxy({} as PrismaClient, {
-  get(_target, prop) {
-    return (getDb() as any)[prop];
-  },
-});
-
-if (process.env.NODE_ENV !== 'production') {
-  if (!globalForPrisma.prisma) {
-    globalForPrisma.prisma = _db;
-  }
-}
+export const db = getDb();
