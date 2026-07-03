@@ -1,0 +1,69 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model MenuCategory {
+  id        String    @id @default(cuid())
+  name      String
+  icon      String    @default("☕")
+  sortOrder Int       @default(0)
+  image     String    @default("")
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  items     MenuItem[]
+}
+
+model MenuItem {
+  id          String   @id @default(cuid())
+  name        String
+  description String   @default("")
+  price       Int      @default(0)
+  categoryId  String
+  sortOrder   Int      @default(0)
+  available   Boolean  @default(true)
+  featured    Boolean  @default(false)
+  image       String   @default("")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  category    MenuCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+}
+
+model SiteSettings {
+  id          String @id @default("main")
+  cafeName    String @default("کافه دوپامین")
+  address     String @default("اسلامشهر، باغ فیض")
+  phone       String @default("")
+  instagram   String @default("")
+  telegram    String @default("")
+  whatsapp    String @default("")
+  workHours   String @default("همه روزه ۸ صبح تا ۱۲ شب")
+  mapUrl      String @default("")
+  aboutText   String @default("کافه دوپامین، فضایی دلنشین برای لذت بردن از بهترین قهوه و نوشیدنی‌ها")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model ThemeSettings {
+  id              String @id @default("main")
+  heroTitle       String @default("کافه دوپامین")
+  heroSubtitle    String @default("بهترین قهوه و نوشیدنی‌ها در فضایی دلنشین")
+  heroImage       String @default("")
+  aboutImage      String @default("")
+  primaryColor    String @default("#8B5E3C")
+  accentColor     String @default("#D4A574")
+  bgColor         String @default("#FDF8F3")
+  cardBgColor     String @default("#FFFFFF")
+  textColor       String @default("#2C1810")
+  sectionTitle1   String @default("درباره ما")
+  sectionTitle2   String @default("منوی کافه")
+  sectionTitle3   String @default("محبوب‌ترین‌ها")
+  sectionTitle4   String @default("موقعیت ما")
+  footerText      String @default("تمامی حقوق محفوظ است")
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
