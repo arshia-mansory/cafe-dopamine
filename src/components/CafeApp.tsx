@@ -175,7 +175,7 @@ async function apiFetch(action: string, options?: RequestInit) {
   const res = await fetch(`/api?action=${action}`, {
     headers: {
       'Content-Type': 'application/json',
-      'x-admin-password': 'dopamine1403',
+      'x-admin-password': currentAdminPw,
       ...options?.headers,
     },
     ...options,
@@ -189,7 +189,7 @@ async function uploadImage(file: File, type: string): Promise<string> {
   formData.append('type', type);
   const res = await fetch('/api?action=upload', {
     method: 'POST',
-    headers: { 'x-admin-password': 'dopamine1403' },
+    headers: { 'x-admin-password': currentAdminPw },
     body: formData,
   });
   const data = await res.json();
@@ -270,6 +270,8 @@ function SortableItem({ item, onEdit, onDelete, onToggleAvailable, onToggleFeatu
 
 // ─── Main Component ──────────────────────────────────────────────────────────
 
+let currentAdminPw = 'dopamine1403';
+
 export default function CafeApp({ categories: initialCategories, settings: initialSettings, theme: initialTheme }: CafeAppProps) {
   // ── State ──
   const [isAdmin, setIsAdmin] = useState(false);
@@ -293,6 +295,8 @@ export default function CafeApp({ categories: initialCategories, settings: initi
   const [categoryDialogOpen, setCategoryDialogOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState<MenuCategoryType | null>(null);
   const [catForm, setCatForm] = useState({ name: '', icon: '☕', image: '' });
+
+  const [pwForm, setPwForm] = useState({ current: '', newPw: '', confirm: '' });
 
   const [itemDialogOpen, setItemDialogOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<MenuItemType | null>(null);
@@ -336,6 +340,7 @@ export default function CafeApp({ categories: initialCategories, settings: initi
       if (data.success) {
         setIsAdmin(true);
         setLoginOpen(false);
+        currentAdminPw = loginPassword;
         setLoginPassword('');
         toast.success('ورود موفق!');
         // Expand first category
@@ -574,6 +579,41 @@ export default function CafeApp({ categories: initialCategories, settings: initi
       toast.error('خطا');
     }
   }, [siteSettings]);
+
+  const changePassword = useCallback(async () => {
+    if (!pwForm.current || !pwForm.newPw || !pwForm.confirm) {
+      toast.error('همه فیلدها الزامی است');
+      return;
+    }
+    if (pwForm.newPw !== pwForm.confirm) {
+      toast.error('رمز جدید و تکرار آن مطابقت ندارند');
+      return;
+    }
+    if (pwForm.newPw.length < 4) {
+      toast.error('رمز جدید باید حداقل ۴ کاراکتر باشد');
+      return;
+    }
+    try {
+      const res = await fetch('/api?action=change-password', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-admin-password': currentAdminPw,
+        },
+        body: JSON.stringify({ newPassword: pwForm.newPw }),
+      });
+      const data = await res.json();
+      if (data.error) {
+        toast.error(data.error);
+        return;
+      }
+      currentAdminPw = pwForm.newPw;
+      setPwForm({ current: '', newPw: '', confirm: '' });
+      toast.success('رمز عبور با موفقیت تغییر کرد');
+    } catch {
+      toast.error('خطا در تغییر رمز');
+    }
+  }, [pwForm]);
 
   // ── Image upload handlers ──
   const handleHeroUpload = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -1618,6 +1658,47 @@ export default function CafeApp({ categories: initialCategories, settings: initi
                     <Save className="h-4 w-4 ml-2" />
                     ذخیره اطلاعات
                   </Button>
+                  <div className="pt-6 border-t mt-2" style={{ borderColor: `${tc.accentColor}33` }}>
+                    <h3 className="font-semibold text-sm mb-4" style={{ color: tc.primaryColor }}>تغییر رمز عبور مدیریت</h3>
+                    <div className="space-y-3">
+                      <div>
+                        <Label className="text-xs">رمز فعلی</Label>
+                        <Input
+                          type="password"
+                          value={pwForm.current}
+                          onChange={(e) => setPwForm(p => ({ ...p, current: e.target.value }))}
+                          className="mt-1 text-sm"
+                          dir="ltr"
+                          placeholder="رمز فعلی را وارد کنید"
+                        />
+                      </div>
+                      <div>
+                        <Label className="text-xs">رمز جدید</Label>
+                        <Input
+                          type="password"
+                          value={pwForm.newPw}
+                          onChange={(e) => setPwForm(p => ({ ...p, newPw: e.target.value }))}
+                          className="mt-1 text-sm"
+                          dir="ltr"
+                          placeholder="حداقل ۴ کاراکتر"
+                        />
+                      </div>
+                      <div>
+                        <Label className="text-xs">تکرار رمز جدید</Label>
+                        <Input
+                          type="password"
+                          value={pwForm.confirm}
+                          onChange={(e) => setPwForm(p => ({ ...p, confirm: e.target.value }))}
+                          className="mt-1 text-sm"
+                          dir="ltr"
+                          placeholder="رمز جدید را تکرار کنید"
+                        />
+                      </div>
+                      <Button onClick={changePassword} variant="outline" className="w-full">
+                        تغییر رمز عبور
+                      </Button>
+                    </div>
+                  </div>
                 </div>
               </ScrollArea>
             </TabsContent>

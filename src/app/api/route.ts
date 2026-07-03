@@ -2,10 +2,23 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import sharp from 'sharp';
 
-const ADMIN_PASSWORD = 'dopamine1403';
+const DEFAULT_PASSWORD = 'dopamine1403';
+let _cachedPw: string | undefined;
 
-function checkAuth(request: NextRequest): boolean {
-  return request.headers.get('x-admin-password') === ADMIN_PASSWORD;
+async function getPw(): Promise<string> {
+  if (_cachedPw !== undefined) return _cachedPw;
+  try {
+    await db.execute(`CREATE TABLE IF NOT EXISTS "AppConfig" (key TEXT PRIMARY KEY, value TEXT NOT NULL)`);
+    await db.execute({ sql: `INSERT OR IGNORE INTO "AppConfig" (key, value) VALUES ('adminPassword', ?)`, args: [DEFAULT_PASSWORD] });
+    const r = await db.execute(`SELECT value FROM "AppConfig" WHERE key = 'adminPassword'`);
+    _cachedPw = r.rows[0]?.value || DEFAULT_PASSWORD;
+  } catch { _cachedPw = DEFAULT_PASSWORD; }
+  return _cachedPw;
+}
+
+async function checkAuth(request: NextRequest): Promise<boolean> {
+  const pw = await getPw();
+  return request.headers.get('x-admin-password') === pw;
 }
 
 function error(message: string, status = 400) {
@@ -119,13 +132,27 @@ export async function POST(request: NextRequest) {
     switch (action) {
       case 'login': {
         const body = await request.json();
-        if (body.password === ADMIN_PASSWORD) {
+        const pw = await getPw();
+        if (body.password === pw) {
           return ok({ success: true, admin: true });
         }
         return error('Invalid password', 401);
       }
+      case 'change-password': {
+        const body = await request.json();
+        const currentPw = await getPw();
+        if (request.headers.get('x-admin-password') !== currentPw) {
+          return error('Unauthorized', 401);
+        }
+        if (!body.newPassword || body.newPassword.length < 4) {
+          return error('رمز جدید باید حداقل ۴ کاراکتر باشد');
+        }
+        await db.execute({ sql: `UPDATE "AppConfig" SET value = ? WHERE key = 'adminPassword'`, args: [body.newPassword] });
+        _cachedPw = body.newPassword;
+        return ok({ success: true });
+      }
       case 'category': {
-        if (!checkAuth(request)) return error('Unauthorized', 401);
+        if (!(await checkAuth(request))) return error('Unauthorized', 401);
         const body = await request.json();
         const id = Math.random().toString(36).substring(2, 15) + Date.now().toString(36);
         const now = new Date().toISOString();
@@ -136,7 +163,7 @@ export async function POST(request: NextRequest) {
         return ok({ id, name: body.name });
       }
       case 'item': {
-        if (!checkAuth(request)) return error('Unauthorized', 401);
+        if (!(await checkAuth(request))) return error('Unauthorized', 401);
         const body = await request.json();
         const id = Math.random().toString(36).substring(2, 15) + Date.now().toString(36);
         const now = new Date().toISOString();
@@ -147,7 +174,7 @@ export async function POST(request: NextRequest) {
         return ok({ id, name: body.name });
       }
       case 'upload': {
-        if (!checkAuth(request)) return error('Unauthorized', 401);
+        if (!(await checkAuth(request))) return error('Unauthorized', 401);
         const formData = await request.formData();
         const file = formData.get('file') as File | null;
         if (!file) return error('File is required');
@@ -170,7 +197,7 @@ export async function PUT(request: NextRequest) {
   try {
     switch (action) {
       case 'item': {
-        if (!checkAuth(request)) return error('Unauthorized', 401);
+        if (!(await checkAuth(request))) return error('Unauthorized', 401);
         const body = await request.json();
         if (!body.id) return error('Item id is required');
         const { id, ...data } = body;
@@ -187,7 +214,7 @@ export async function PUT(request: NextRequest) {
         return ok({ success: true });
       }
       case 'category': {
-        if (!checkAuth(request)) return error('Unauthorized', 401);
+        if (!(await checkAuth(request))) return error('Unauthorized', 401);
         const body = await request.json();
         if (!body.id) return error('Category id is required');
         const { id, ...data } = body;
@@ -203,7 +230,7 @@ export async function PUT(request: NextRequest) {
         return ok({ success: true });
       }
       case 'settings': {
-        if (!checkAuth(request)) return error('Unauthorized', 401);
+        if (!(await checkAuth(request))) return error('Unauthorized', 401);
         const body = await request.json();
         const now = new Date().toISOString();
         const sets: string[] = ['"updatedAt" = ?'];
@@ -217,7 +244,7 @@ export async function PUT(request: NextRequest) {
         return ok({ success: true });
       }
       case 'theme': {
-        if (!checkAuth(request)) return error('Unauthorized', 401);
+        if (!(await checkAuth(request))) return error('Unauthorized', 401);
         const body = await request.json();
         const now = new Date().toISOString();
         const sets: string[] = ['"updatedAt" = ?'];
@@ -231,7 +258,7 @@ export async function PUT(request: NextRequest) {
         return ok({ success: true });
       }
       case 'reorder': {
-        if (!checkAuth(request)) return error('Unauthorized', 401);
+        if (!(await checkAuth(request))) return error('Unauthorized', 401);
         const body = await request.json();
         if (!Array.isArray(body.items)) return error('items array is required');
         for (const item of body.items) {
@@ -257,7 +284,7 @@ export async function DELETE(request: NextRequest) {
   const id = searchParams.get('id');
 
   try {
-    if (!checkAuth(request)) return error('Unauthorized', 401);
+    if (!(await checkAuth(request))) return error('Unauthorized', 401);
     if (!id) return error('ID is required');
 
     switch (action) {
