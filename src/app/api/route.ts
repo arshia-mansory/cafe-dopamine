@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import sharp from 'sharp';
 
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'dopamine1403';
+const ADMIN_PASSWORD = 'dopamine1403';
 
 function checkAuth(request: NextRequest): boolean {
   return request.headers.get('x-admin-password') === ADMIN_PASSWORD;
