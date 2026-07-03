@@ -102,6 +102,9 @@ interface SiteSettingsType {
   workHours: string;
   mapUrl: string;
   aboutText: string;
+  openTime: string;
+  closeTime: string;
+  closedDays: string;
 }
 
 interface ThemeSettingsType {
@@ -167,9 +170,45 @@ const defaultSettings: SiteSettingsType = {
   telegram: '',
   whatsapp: '',
   workHours: 'همه روزه ۸ صبح تا ۱۲ شب',
-  mapUrl: '',
+  mapUrl: 'https://maps.google.com/maps?q=35.5564768,51.2466529&t=&z=16&ie=UTF8&iwloc=&output=embed',
   aboutText: 'کافه دوپامین، فضایی دلنشین برای لذت بردن از بهترین قهوه و نوشیدنی‌ها',
+  openTime: '08:00',
+  closeTime: '00:00',
+  closedDays: '',
 };
+
+function getIranNow(): Date {
+  const now = new Date();
+  const str = now.toLocaleString('en-US', { timeZone: 'Asia/Tehran' });
+  return new Date(str);
+}
+
+function checkIsOpen(openTime: string, closeTime: string, closedDays: string): boolean {
+  if (!openTime || !closeTime) return true;
+  const iran = getIranNow();
+  const day = iran.getDay();
+  const mins = iran.getHours() * 60 + iran.getMinutes();
+  const closed = closedDays.split(',').map(d => parseInt(d.trim())).filter(d => !isNaN(d));
+  if (closed.includes(day)) return false;
+  const [oh, om] = openTime.split(':').map(Number);
+  const [ch, cm] = closeTime.split(':').map(Number);
+  const openMins = oh * 60 + om;
+  const closeMins = ch * 60 + cm;
+  if (closeMins > openMins) {
+    return mins >= openMins && mins < closeMins;
+  }
+  return mins >= openMins || mins < closeMins;
+}
+
+const PERSIAN_DAYS = [
+  { key: '0', label: 'یکشنبه' },
+  { key: '1', label: 'دوشنبه' },
+  { key: '2', label: 'سه‌شنبه' },
+  { key: '3', label: 'چهارشنبه' },
+  { key: '4', label: 'پنجشنبه' },
+  { key: '5', label: 'جمعه' },
+  { key: '6', label: 'شنبه' },
+];
 
 async function apiFetch(action: string, options?: RequestInit) {
   const res = await fetch(`/api?action=${action}`, {
@@ -285,6 +324,17 @@ export default function CafeApp({ categories: initialCategories, settings: initi
   const [siteSettings, setSiteSettings] = useState<SiteSettingsType>(initialSettings || defaultSettings);
   const [themeSettings, setThemeSettings] = useState<ThemeSettingsType>(initialTheme || defaultTheme);
   const [featuredItems, setFeaturedItems] = useState<MenuItemType[]>([]);
+  const [isOpen, setIsOpen] = useState(true);
+
+  // Auto-check open/closed status every minute based on Iran timezone
+  useEffect(() => {
+    const check = () => {
+      setIsOpen(checkIsOpen(siteSettings.openTime, siteSettings.closeTime, siteSettings.closedDays));
+    };
+    check();
+    const iv = setInterval(check, 60000);
+    return () => clearInterval(iv);
+  }, [siteSettings.openTime, siteSettings.closeTime, siteSettings.closedDays]);
 
   // UI state
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -825,13 +875,13 @@ export default function CafeApp({ categories: initialCategories, settings: initi
           >
             <motion.div
               className="inline-flex items-center gap-2 mb-6 px-5 py-2 rounded-full glass-effect text-sm font-medium"
-              style={{ color: tc.accentColor }}
+              style={{ color: isOpen ? '#4ade80' : '#f87171' }}
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.6, delay: 0.3 }}
             >
-              <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
-              باز است
+              <span className={`w-2.5 h-2.5 rounded-full animate-pulse ${isOpen ? 'bg-green-400' : 'bg-red-400'}`} />
+              {isOpen ? 'باز است' : 'بسته است'}
             </motion.div>
             <motion.h1
               className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-black mb-6 leading-tight"
@@ -1629,7 +1679,7 @@ export default function CafeApp({ categories: initialCategories, settings: initi
                     { key: 'instagram', label: 'اینستاگرام', type: 'text' },
                     { key: 'telegram', label: 'تلگرام', type: 'text' },
                     { key: 'whatsapp', label: 'واتساپ', type: 'text' },
-                    { key: 'workHours', label: 'ساعت کاری', type: 'text' },
+                    { key: 'workHours', label: 'ساعت کاری (نمایشی)', type: 'text' },
                     { key: 'mapUrl', label: 'لینک نقشه', type: 'text' },
                   ].map(({ key, label }) => (
                     <div key={key}>
@@ -1654,6 +1704,67 @@ export default function CafeApp({ categories: initialCategories, settings: initi
                       className="mt-1 text-sm min-h-[100px]"
                     />
                   </div>
+
+                  {/* ── Auto Open/Close Settings ── */}
+                  <div className="pt-4 border-t" style={{ borderColor: `${tc.accentColor}33` }}>
+                    <h3 className="font-semibold text-sm mb-1" style={{ color: tc.primaryColor }}>ساعت کاری خودکار</h3>
+                    <p className="text-[11px] text-muted-foreground mb-3">وضعیت «باز/بسته» بر اساس این ساعت‌ها خودکار تنظیم می‌شود</p>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <Label className="text-xs">ساعت شروع</Label>
+                        <Input
+                          type="time"
+                          value={siteSettings.openTime || '08:00'}
+                          onChange={(e) => setSiteSettings(p => ({ ...p, openTime: e.target.value }))}
+                          className="mt-1 text-sm"
+                          dir="ltr"
+                        />
+                      </div>
+                      <div>
+                        <Label className="text-xs">ساعت پایان</Label>
+                        <Input
+                          type="time"
+                          value={siteSettings.closeTime || '00:00'}
+                          onChange={(e) => setSiteSettings(p => ({ ...p, closeTime: e.target.value }))}
+                          className="mt-1 text-sm"
+                          dir="ltr"
+                        />
+                      </div>
+                    </div>
+                    <div className="mt-3">
+                      <Label className="text-xs">روزهای تعطیل</Label>
+                      <div className="flex flex-wrap gap-1.5 mt-1.5">
+                        {PERSIAN_DAYS.map((d) => {
+                          const isActive = (siteSettings.closedDays || '').split(',').includes(d.key);
+                          return (
+                            <button
+                              key={d.key}
+                              type="button"
+                              onClick={() => {
+                                const days = (siteSettings.closedDays || '').split(',').filter(Boolean);
+                                const next = isActive ? days.filter(x => x !== d.key) : [...days, d.key];
+                                setSiteSettings(p => ({ ...p, closedDays: next.join(',') }));
+                              }}
+                              className="px-2.5 py-1 rounded-lg text-[11px] font-medium transition-all"
+                              style={{
+                                backgroundColor: isActive ? tc.primaryColor : `${tc.primaryColor}15`,
+                                color: isActive ? '#fff' : tc.primaryColor,
+                              }}
+                            >
+                              {d.label}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                    <div className="mt-3 flex items-center gap-2 p-2.5 rounded-lg" style={{ backgroundColor: isOpen ? '#4ade8015' : '#f8717115' }}>
+                      <span className={`w-2 h-2 rounded-full ${isOpen ? 'bg-green-400' : 'bg-red-400'}`} />
+                      <span className="text-xs font-medium" style={{ color: isOpen ? '#16a34a' : '#dc2626' }}>
+                        الان: {isOpen ? 'باز است' : 'بسته است'}
+                      </span>
+                    </div>
+                  </div>
+
                   <Button onClick={saveSiteSettings} className="w-full" style={{ backgroundColor: tc.primaryColor, color: '#fff' }}>
                     <Save className="h-4 w-4 ml-2" />
                     ذخیره اطلاعات

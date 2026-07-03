@@ -21,6 +21,13 @@ async function checkAuth(request: NextRequest): Promise<boolean> {
   return request.headers.get('x-admin-password') === pw;
 }
 
+async function ensureSettingsColumns() {
+  const cols = ['openTime TEXT DEFAULT \'08:00\'', 'closeTime TEXT DEFAULT \'00:00\'', 'closedDays TEXT DEFAULT \'\''];
+  for (const col of cols) {
+    try { await db.execute(`ALTER TABLE "SiteSettings" ADD COLUMN ${col}`); } catch { /* column exists */ }
+  }
+}
+
 function error(message: string, status = 400) {
   return NextResponse.json({ error: message }, { status });
 }
@@ -96,6 +103,7 @@ export async function GET(request: NextRequest) {
         return ok(buildCategory(result.rows));
       }
       case 'settings': {
+        await ensureSettingsColumns();
         const [s, t] = await Promise.all([
           db.execute(`SELECT * FROM "SiteSettings" WHERE id = 'main'`),
           db.execute(`SELECT * FROM "ThemeSettings" WHERE id = 'main'`),
