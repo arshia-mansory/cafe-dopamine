@@ -65,6 +65,7 @@ import {
   arrayMove,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
+import { motion } from 'framer-motion';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -765,13 +766,33 @@ export default function CafeApp({ categories: initialCategories, settings: initi
             style={{ backgroundImage: `url(${tc.heroImage})` }}
           />
           <div className="absolute inset-0" style={{ backgroundColor: `${tc.textColor}88` }} />
-          <div className="relative z-10 text-center px-4 max-w-2xl">
-            <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold mb-4 drop-shadow-lg" style={{ color: '#FFFFFF' }}>
+          <motion.div
+            className="relative z-10 text-center px-4 max-w-2xl"
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-50px" }}
+            transition={{ duration: 0.7 }}
+          >
+            <motion.h1
+              className="text-4xl sm:text-5xl md:text-6xl font-extrabold mb-4 drop-shadow-lg"
+              style={{ color: '#FFFFFF' }}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-50px" }}
+              transition={{ duration: 0.6, delay: 0.1 }}
+            >
               {tc.heroTitle}
-            </h1>
-            <p className="text-lg sm:text-xl mb-8 drop-shadow-md" style={{ color: `${tc.accentColor}ee` }}>
+            </motion.h1>
+            <motion.p
+              className="text-lg sm:text-xl mb-8 drop-shadow-md"
+              style={{ color: `${tc.accentColor}ee` }}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-50px" }}
+              transition={{ duration: 0.6, delay: 0.25 }}
+            >
               {tc.heroSubtitle}
-            </p>
+            </motion.p>
             <Button
               size="lg"
               onClick={scrollToMenu}
@@ -780,15 +801,28 @@ export default function CafeApp({ categories: initialCategories, settings: initi
             >
               مشاهده منو
             </Button>
-          </div>
+          </motion.div>
         </section>
 
         {/* ─── ABOUT ─────────────────────────────────────────────────────── */}
         <section id="about" className="py-16 sm:py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
-          <h2 className="text-3xl sm:text-4xl font-bold text-center mb-12" style={{ color: tc.primaryColor }}>
+          <motion.h2
+            className="text-3xl sm:text-4xl font-bold text-center mb-12"
+            style={{ color: tc.primaryColor }}
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-50px" }}
+            transition={{ duration: 0.6 }}
+          >
             {tc.sectionTitle1}
-          </h2>
-          <div className="grid md:grid-cols-2 gap-8 sm:gap-12 items-center">
+          </motion.h2>
+          <motion.div
+            className="grid md:grid-cols-2 gap-8 sm:gap-12 items-center"
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-50px" }}
+            transition={{ duration: 0.7, delay: 0.15 }}
+          >
             <div className="rounded-2xl overflow-hidden shadow-lg">
               <img
                 src={tc.aboutImage}
@@ -801,22 +835,35 @@ export default function CafeApp({ categories: initialCategories, settings: initi
                 {siteSettings.aboutText}
               </p>
             </div>
-          </div>
+          </motion.div>
         </section>
 
         {/* ─── FEATURED ──────────────────────────────────────────────────── */}
         {featuredItems.length > 0 && (
           <section id="featured" className="py-16 sm:py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
-            <h2 className="text-3xl sm:text-4xl font-bold text-center mb-12" style={{ color: tc.primaryColor }}>
+            <motion.h2
+              className="text-3xl sm:text-4xl font-bold text-center mb-12"
+              style={{ color: tc.primaryColor }}
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-50px" }}
+              transition={{ duration: 0.6 }}
+            >
               {tc.sectionTitle3}
-            </h2>
+            </motion.h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {featuredItems.map((item) => (
-                <Card
+              {featuredItems.map((item, index) => (
+                <motion.div
                   key={item.id}
-                  className="rounded-xl overflow-hidden shadow-md transition-transform hover:scale-[1.02] hover:shadow-lg"
-                  style={{ backgroundColor: tc.cardBgColor }}
+                  initial={{ opacity: 0, y: 30 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, margin: "-50px" }}
+                  transition={{ duration: 0.5, delay: index * 0.1 }}
                 >
+                  <Card
+                    className="rounded-xl overflow-hidden shadow-md transition-transform hover:scale-[1.02] hover:shadow-lg"
+                    style={{ backgroundColor: tc.cardBgColor }}
+                  >
                   {item.image && (
                     <div className="w-full h-48 overflow-hidden">
                       <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
@@ -840,6 +887,7 @@ export default function CafeApp({ categories: initialCategories, settings: initi
                     )}
                   </div>
                 </Card>
+                </motion.div>
               ))}
             </div>
           </section>
@@ -851,12 +899,25 @@ export default function CafeApp({ categories: initialCategories, settings: initi
           id="menu"
           className="py-16 sm:py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto"
         >
-          <h2 className="text-3xl sm:text-4xl font-bold text-center mb-12" style={{ color: tc.primaryColor }}>
+          <motion.h2
+            className="text-3xl sm:text-4xl font-bold text-center mb-12"
+            style={{ color: tc.primaryColor }}
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-50px" }}
+            transition={{ duration: 0.6 }}
+          >
             {tc.sectionTitle2}
-          </h2>
+          </motion.h2>
 
           {/* Category Pills */}
-          <div className="flex flex-wrap justify-center gap-2 mb-10">
+          <motion.div
+            className="flex flex-wrap justify-center gap-2 mb-10"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-50px" }}
+            transition={{ duration: 0.5, delay: 0.15 }}
+          >
             <button
               onClick={() => setActiveMenuCategory('all')}
               className="px-4 py-2 rounded-full text-sm font-medium transition-all"
@@ -880,13 +941,19 @@ export default function CafeApp({ categories: initialCategories, settings: initi
                 {cat.icon} {cat.name}
               </button>
             ))}
-          </div>
+          </motion.div>
 
           {/* Items Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {allMenuItems.filter((i) => i.available).map((item) => (
-              <Card
+            {allMenuItems.filter((i) => i.available).map((item, index) => (
+              <motion.div
                 key={item.id}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-50px" }}
+                transition={{ duration: 0.5, delay: index * 0.08 }}
+              >
+              <Card
                 className="rounded-xl overflow-hidden shadow-md transition-transform hover:scale-[1.02] hover:shadow-lg"
                 style={{ backgroundColor: tc.cardBgColor }}
               >
@@ -912,6 +979,7 @@ export default function CafeApp({ categories: initialCategories, settings: initi
                   </p>
                 </div>
               </Card>
+              </motion.div>
             ))}
           </div>
 
@@ -925,10 +993,23 @@ export default function CafeApp({ categories: initialCategories, settings: initi
 
         {/* ─── LOCATION ──────────────────────────────────────────────────── */}
         <section id="location" className="py-16 sm:py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
-          <h2 className="text-3xl sm:text-4xl font-bold text-center mb-12" style={{ color: tc.primaryColor }}>
+          <motion.h2
+            className="text-3xl sm:text-4xl font-bold text-center mb-12"
+            style={{ color: tc.primaryColor }}
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-50px" }}
+            transition={{ duration: 0.6 }}
+          >
             {tc.sectionTitle4}
-          </h2>
-          <div className="grid md:grid-cols-2 gap-8 sm:gap-12">
+          </motion.h2>
+          <motion.div
+            className="grid md:grid-cols-2 gap-8 sm:gap-12"
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-50px" }}
+            transition={{ duration: 0.7, delay: 0.15 }}
+          >
             <div className="space-y-6">
               <div className="flex items-start gap-3">
                 <MapPin className="h-5 w-5 mt-1 shrink-0" style={{ color: tc.accentColor }} />
@@ -976,9 +1057,51 @@ export default function CafeApp({ categories: initialCategories, settings: initi
                 title="موقعیت کافه"
               />
             </div>
-          </div>
+          </motion.div>
         </section>
       </main>
+
+      {/* ─── QR CODE ───────────────────────────────────────────────────── */}
+      <motion.section
+        className="py-16 sm:py-20 px-4 sm:px-6 lg:px-8"
+        style={{ backgroundColor: `${tc.accentColor}0d` }}
+        initial={{ opacity: 0, y: 30 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: "-50px" }}
+        transition={{ duration: 0.7 }}
+      >
+        <div className="max-w-7xl mx-auto flex flex-col items-center text-center">
+          <motion.div
+            className="w-52 h-52 sm:w-60 sm:h-60 rounded-2xl bg-white shadow-xl p-3 flex items-center justify-center"
+            initial={{ opacity: 0, scale: 0.9 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true, margin: "-50px" }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+          >
+            <img src="/qr.png" alt="QR Code" className="w-full h-full object-contain rounded-lg" />
+          </motion.div>
+          <motion.p
+            className="mt-6 text-lg sm:text-xl font-semibold"
+            style={{ color: tc.primaryColor }}
+            initial={{ opacity: 0, y: 15 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-50px" }}
+            transition={{ duration: 0.5, delay: 0.4 }}
+          >
+            برای دسترسی سریع، اسکن کنید
+          </motion.p>
+          <motion.p
+            className="mt-2 text-sm"
+            style={{ color: `${tc.textColor}88` }}
+            initial={{ opacity: 0, y: 15 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-50px" }}
+            transition={{ duration: 0.5, delay: 0.5 }}
+          >
+            منوی کافه و سفارش آنلاین
+          </motion.p>
+        </div>
+      </motion.section>
 
       {/* ─── FOOTER ─────────────────────────────────────────────────────── */}
       <footer
