@@ -1,9 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
-import { writeFile, mkdir } from 'fs/promises';
-import path from 'path';
+import sharp from 'sharp';
 
-const ADMIN_PASSWORD = 'dopamine1403';
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'dopamine1403';
 
 function checkAuth(request: NextRequest): boolean {
   return request.headers.get('x-admin-password') === ADMIN_PASSWORD;
@@ -15,6 +14,18 @@ function error(message: string, status = 400) {
 
 function ok(data: unknown) {
   return NextResponse.json(data);
+}
+
+async function imageToBase64(file: File): Promise<string> {
+  const bytes = await file.arrayBuffer();
+  const buffer = Buffer.from(bytes);
+
+  const resized = await sharp(buffer)
+    .resize(1200, 800, { fit: 'inside', withoutEnlargement: true })
+    .jpeg({ quality: 80 })
+    .toBuffer();
+
+  return `data:image/jpeg;base64,${resized.toString('base64')}`;
 }
 
 export async function GET(request: NextRequest) {
@@ -101,24 +112,11 @@ export async function POST(request: NextRequest) {
         if (!checkAuth(request)) return error('Unauthorized', 401);
         const formData = await request.formData();
         const file = formData.get('file') as File | null;
-        const type = formData.get('type') as string | null;
 
-        if (!file || !type) return error('File and type are required');
-        if (!['hero', 'about', 'item'].includes(type)) {
-          return error('Invalid type. Must be hero, about, or item');
-        }
+        if (!file) return error('File is required');
 
-        const bytes = await file.arrayBuffer();
-        const buffer = Buffer.from(bytes);
-
-        const uploadDir = path.join(process.cwd(), 'public', 'uploads', type);
-        await mkdir(uploadDir, { recursive: true });
-
-        const filename = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9._-]/g, '_')}`;
-        const filepath = path.join(uploadDir, filename);
-        await writeFile(filepath, buffer);
-
-        return ok({ path: `/uploads/${type}/${filename}` });
+        const base64 = await imageToBase64(file);
+        return ok({ path: base64 });
       }
       default:
         return error('Unknown action', 400);

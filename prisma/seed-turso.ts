@@ -1,10 +1,22 @@
 import { PrismaClient } from '@prisma/client';
+import { PrismaLibSQL } from '@prisma/adapter-libsql';
+import { createClient } from '@libsql/client';
 import { HERO_IMAGE, ABOUT_IMAGE } from './seed-images';
 
-const db = new PrismaClient();
-
 async function main() {
-  console.log('Seeding database...');
+  const url = process.env.DATABASE_URL;
+  const token = process.env.DATABASE_AUTH_TOKEN;
+
+  if (!url || !token) {
+    console.error('DATABASE_URL and DATABASE_AUTH_TOKEN are required');
+    process.exit(1);
+  }
+
+  const libsql = createClient({ url, authToken: token });
+  const adapter = new PrismaLibSQL(libsql);
+  const db = new PrismaClient({ adapter });
+
+  console.log('Seeding Turso database...');
 
   await db.siteSettings.upsert({
     where: { id: 'main' },
@@ -49,9 +61,7 @@ async function main() {
 
   const categories = [
     {
-      name: 'قهوه‌های گرم',
-      icon: '☕',
-      sortOrder: 1,
+      name: 'قهوه‌های گرم', icon: '☕', sortOrder: 1,
       items: [
         { name: 'اسپرسو', description: 'یک شات اسپرسو خالص و غلیظ', sortOrder: 1 },
         { name: 'دابل اسپرسو', description: 'دو شات اسپرسو برای عاشقان قهوه قوی', sortOrder: 2 },
@@ -66,9 +76,7 @@ async function main() {
       ],
     },
     {
-      name: 'قهوه‌های سرد',
-      icon: '🧊',
-      sortOrder: 2,
+      name: 'قهوه‌های سرد', icon: '🧊', sortOrder: 2,
       items: [
         { name: 'آیس لاته', description: 'لاته سرد با یخ و شیر تازه', sortOrder: 1 },
         { name: 'آیس موکا', description: 'موکای سرد با شکلات و خامه', sortOrder: 2 },
@@ -81,9 +89,7 @@ async function main() {
       ],
     },
     {
-      name: 'دمنوش و چای',
-      icon: '🍵',
-      sortOrder: 3,
+      name: 'دمنوش و چای', icon: '🍵', sortOrder: 3,
       items: [
         { name: 'دمنوش بابونه', description: 'دمنوش آرامش‌بخش بابونه طبیعی', sortOrder: 1 },
         { name: 'چای نعناع', description: 'چای نعناع تازه و خنک‌کننده', sortOrder: 2 },
@@ -96,9 +102,7 @@ async function main() {
       ],
     },
     {
-      name: 'نوشیدنی‌های سرد',
-      icon: '🍹',
-      sortOrder: 4,
+      name: 'نوشیدنی‌های سرد', icon: '🍹', sortOrder: 4,
       items: [
         { name: 'لیموناد', description: 'لیموناد تازه با نعناع و یخ', sortOrder: 1 },
         { name: 'موهیتو', description: 'موهیتو با لیمو تازه، نعناع و یخ', sortOrder: 2 },
@@ -110,9 +114,7 @@ async function main() {
       ],
     },
     {
-      name: 'دسر و کیک',
-      icon: '🍰',
-      sortOrder: 5,
+      name: 'دسر و کیک', icon: '🍰', sortOrder: 5,
       items: [
         { name: 'چیزکیک', description: 'چیزکیک نیویورکی با پایه بیسکویت', sortOrder: 1 },
         { name: 'تیرامیسو', description: 'دسر ایتالیایی با قهوه و ماسکارپونه', sortOrder: 2 },
@@ -125,9 +127,7 @@ async function main() {
       ],
     },
     {
-      name: 'صبحانه و میان‌وعده',
-      icon: '🥐',
-      sortOrder: 6,
+      name: 'صبحانه و میان‌وعده', icon: '🥐', sortOrder: 6,
       items: [
         { name: 'املت', description: 'املت تازه با سبزیجات و پنیر', sortOrder: 1 },
         { name: 'پنکیک', description: 'پنکیک نرم با شیره افرا و توت‌ها', sortOrder: 2 },
@@ -140,7 +140,7 @@ async function main() {
   ];
 
   for (const cat of categories) {
-    const category = await db.menuCategory.create({
+    await db.menuCategory.create({
       data: {
         name: cat.name,
         icon: cat.icon,
@@ -160,14 +160,11 @@ async function main() {
     console.log(`Category "${cat.name}" with ${cat.items.length} items seeded`);
   }
 
-  console.log('Seeding complete!');
+  console.log('Turso database seeded successfully!');
+  await db.$disconnect();
 }
 
-main()
-  .catch((e) => {
-    console.error('Seeding failed:', e);
-    process.exit(1);
-  })
-  .finally(async () => {
-    await db.$disconnect();
-  });
+main().catch((e) => {
+  console.error('Seed failed:', e);
+  process.exit(1);
+});
