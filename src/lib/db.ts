@@ -19,6 +19,24 @@ function createPrismaClient(): PrismaClient {
   return new PrismaClient({ adapter });
 }
 
-export const db = globalForPrisma.prisma ?? createPrismaClient();
+// Lazy init - only connect when actually used, not during build
+let _db: PrismaClient | undefined;
 
-if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = db;
+function getDb(): PrismaClient {
+  if (!_db) {
+    _db = createPrismaClient();
+  }
+  return _db;
+}
+
+export const db = new Proxy({} as PrismaClient, {
+  get(_target, prop) {
+    return (getDb() as any)[prop];
+  },
+});
+
+if (process.env.NODE_ENV !== 'production') {
+  if (!globalForPrisma.prisma) {
+    globalForPrisma.prisma = _db;
+  }
+}
