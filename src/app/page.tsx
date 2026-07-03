@@ -1,6 +1,9 @@
 import { db } from '@/lib/db';
 import CafeApp from '@/components/CafeApp';
 
+// Force dynamic rendering - data comes from Turso at request time
+export const dynamic = 'force-dynamic';
+
 export default async function Home() {
   const categories = await db.menuCategory.findMany({
     orderBy: { sortOrder: 'asc' },

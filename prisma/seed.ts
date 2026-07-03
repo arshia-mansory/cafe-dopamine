@@ -1,7 +1,18 @@
 import { PrismaClient } from '@prisma/client';
+import { PrismaLibSQL } from '@prisma/adapter-libsql';
+import { createClient } from '@libsql/client';
 import { HERO_IMAGE, ABOUT_IMAGE } from './seed-images';
 
-const db = new PrismaClient();
+const dbUrl = process.env.DATABASE_URL || 'file:db/custom.db';
+const authToken = process.env.DATABASE_AUTH_TOKEN;
+
+const libsql = createClient({
+  url: dbUrl,
+  ...(authToken ? { authToken } : {}),
+});
+
+const adapter = new PrismaLibSQL(libsql);
+const db = new PrismaClient({ adapter });
 
 async function main() {
   console.log('Seeding database...');
