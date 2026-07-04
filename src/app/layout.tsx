@@ -68,7 +68,7 @@ export const metadata: Metadata = {
     apple: "/logo.svg",
   },
   verification: {
-    google: "google-site-verification=YOUR_VERIFICATION_CODE",
+    google: "VtDozlLH00J4D411KZF65BSufg2WViwyT13NYZhGcW0",
   },
 };
 
